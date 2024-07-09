@@ -1,16 +1,16 @@
 // Verilated -*- C++ -*-
 // DESCRIPTION: Verilator output: Symbol table implementation internals
 
-#include "Vtop__pch.h"
-#include "Vtop.h"
-#include "Vtop___024root.h"
+#include "Vlight__pch.h"
+#include "Vlight.h"
+#include "Vlight___024root.h"
 
 // FUNCTIONS
-Vtop__Syms::~Vtop__Syms()
+Vlight__Syms::~Vlight__Syms()
 {
 }
 
-Vtop__Syms::Vtop__Syms(VerilatedContext* contextp, const char* namep, Vtop* modelp)
+Vlight__Syms::Vlight__Syms(VerilatedContext* contextp, const char* namep, Vlight* modelp)
     : VerilatedSyms{contextp}
     // Setup internal state of the Syms class
     , __Vm_modelp{modelp}
@@ -18,7 +18,7 @@ Vtop__Syms::Vtop__Syms(VerilatedContext* contextp, const char* namep, Vtop* mode
     , TOP{this, namep}
 {
         // Check resources
-        Verilated::stackCheck(25);
+        Verilated::stackCheck(23);
     // Configure time unit / time precision
     _vm_contextp__->timeunit(-12);
     _vm_contextp__->timeprecision(-12);

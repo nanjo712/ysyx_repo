@@ -1,22 +1,24 @@
 #include "Vtop.h"
-#include "nvboard.h"
 #include "verilated.h"
 #include "verilated_vcd_c.h"
 #include <cassert>
 #include <cstdlib>
-
-void nvboard_bind_all_pins(TOP_NAME *top);
+#include <iostream>
 
 int main(int argc, char *argv[]) {
-  TOP_NAME top;
-  nvboard_bind_all_pins(&top);
-  nvboard_init();
+  auto contextp = std::make_unique<VerilatedContext>();
+  contextp->commandArgs(argc, argv);
+  auto top = std::make_unique<Vtop>(contextp.get());
 
-  while (1) {
-    nvboard_update();
-    top.eval();
+  int sim_time = 100;
+  while (contextp->time() < sim_time && !contextp->gotFinish()) {
+    top->a = rand() & 1;
+    top->b = rand() & 1;
+    top->eval();
+    std::cout << "a: " << (int)top->a << " b: " << (int)top->b
+              << " f: " << (int)top->f << std::endl;
+    contextp->timeInc(1);
+    assert(top->f == (top->a ^ top->b));
   }
-
-  nvboard_quit();
   return 0;
 }

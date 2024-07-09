@@ -2,9 +2,9 @@
 # DESCRIPTION: Verilator output: Makefile for building Verilated archive or executable
 #
 # Execute this makefile from the object directory:
-#    make -f Vtop.mk
+#    make -f Vlight.mk
 
-default: /home/woshiren/ysyx-workbench/npc/obj_dir/top
+default: /home/woshiren/ysyx-workbench/npc/obj_dir/light
 
 ### Constants...
 # Perl executable (from $PERL)
@@ -30,9 +30,9 @@ VM_SC_TARGET_ARCH = linux
 
 ### Vars...
 # Design prefix (from --prefix)
-VM_PREFIX = Vtop
+VM_PREFIX = Vlight
 # Module prefix (from --prefix)
-VM_MODPREFIX = Vtop
+VM_MODPREFIX = Vlight
 # User CFLAGS (from -CFLAGS on Verilator command line)
 VM_USER_CFLAGS = \
 	-MMD \
@@ -40,7 +40,7 @@ VM_USER_CFLAGS = \
 	-I/usr/include/SDL2 \
 	-D_REENTRANT \
 	-I/home/woshiren/ysyx-workbench/nvboard/usr/include \
-	-DTOP_NAME="Vtop" \
+	-DTOP_NAME="Vlight" \
 
 # User LDLIBS (from -LDFLAGS on Verilator command line)
 VM_USER_LDLIBS = \
@@ -57,26 +57,26 @@ VM_USER_CLASSES = \
 
 # User .cpp directories (from .cpp's on Verilator command line)
 VM_USER_DIR = \
-	/home/woshiren/ysyx-workbench/npc/obj_dir \
+	/home/woshiren/ysyx-workbench/npc \
 	csrc \
 
 
 ### Default rules...
 # Include list of all generated classes
-include Vtop_classes.mk
+include Vlight_classes.mk
 # Include global rules
 include $(VERILATOR_ROOT)/include/verilated.mk
 
 ### Executable rules... (from --exe)
 VPATH += $(VM_USER_DIR)
 
-auto_bind.o: /home/woshiren/ysyx-workbench/npc/obj_dir/auto_bind.cpp
+auto_bind.o: /home/woshiren/ysyx-workbench/npc/auto_bind.cpp
 	$(OBJCACHE) $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(OPT_FAST) -c -o $@ $<
 main.o: csrc/main.cpp
 	$(OBJCACHE) $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(OPT_FAST) -c -o $@ $<
 
 ### Link rules... (from --exe)
-/home/woshiren/ysyx-workbench/npc/obj_dir/top: $(VK_USER_OBJS) $(VK_GLOBAL_OBJS) $(VM_PREFIX)__ALL.a $(VM_HIER_LIBS)
+/home/woshiren/ysyx-workbench/npc/obj_dir/light: $(VK_USER_OBJS) $(VK_GLOBAL_OBJS) $(VM_PREFIX)__ALL.a $(VM_HIER_LIBS)
 	$(LINK) $(LDFLAGS) $^ $(LOADLIBES) $(LDLIBS) $(LIBS) $(SC_LIBS) -o $@
 
 

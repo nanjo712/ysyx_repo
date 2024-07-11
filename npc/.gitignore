@@ -7,6 +7,7 @@
 !*.v
 !*.cc
 !*.cpp
+!constr/*
 !.gitignore
 !README.md
 !CMakeLists.txt

@@ -11,7 +11,7 @@ set(ARGS_VERILATOR
 )
 
 function(VerilateTarget target top_module )
-    auto_bind(${CONSTR}/${top_module}.nxdc ${CMAKE_CURRENT_BINARY_DIR}/${top_module}_auto_bind.cpp)
+    auto_bind(${target} ${CONSTR}/${top_module}.nxdc ${CMAKE_CURRENT_BINARY_DIR}/${top_module}_auto_bind.cpp)
     add_executable(${target} 
         csrc/${top_module}_sim.cpp
         ${CMAKE_CURRENT_BINARY_DIR}/${top_module}_auto_bind.cpp

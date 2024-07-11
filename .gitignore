@@ -13,3 +13,4 @@
 /fceux-am
 /nvboard
 !CMakeLists.txt
+!.clang-format

@@ -36,3 +36,5 @@ endfunction()
 VerilateTarget(Mux Mux4Way2Bit Mux4Way2Bit.v Mux4Way.v)
 
 VerilateTarget(Code CodeTop CodeTop.v Encoder8to3.v Seg7Decoder.v)
+
+VerilateTarget(ALU ALU ALU.v adder.v)

@@ -1,0 +1,9 @@
+top=ALU
+
+A (SW3, SW2, SW1, SW0)
+B (SW7, SW6, SW5, SW4)
+out (LD3, LD2, LD1, LD0)
+zero (LD7)
+overflow (LD6)
+carry (LD5)
+ALUop (SW10, SW9, SW8)

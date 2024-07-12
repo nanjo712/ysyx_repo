@@ -8,6 +8,7 @@ set(CONSTR ${CMAKE_CURRENT_SOURCE_DIR}/constr)
 set(ARGS_VERILATOR 
     -Wall 
     --trace
+    -j 8
 )
 set(MUX_TEMPLATE
     MuxKeyInternal.v 
@@ -49,3 +50,12 @@ VerilateTarget(shift shift shift.v dff.v)
 VerilateTarget(BarrelShift BarrelShift BarrelShift.v ${MUX_TEMPLATE})
 
 VerilateTarget(LSFR LSFR LSFR.v shift.v dff.v)
+
+VerilateTarget(KeyboardDisplay 
+    KeyboardDisplay 
+    KeyboardDisplay.v 
+    Seg7Decoder.v 
+    PS2Keyboard.v 
+    ScanCodeToASCII.v 
+    ${MUX_TEMPLATE}
+)

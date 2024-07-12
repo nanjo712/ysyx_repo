@@ -9,6 +9,11 @@ set(ARGS_VERILATOR
     -Wall 
     --trace
 )
+set(MUX_TEMPLATE
+    MuxKeyInternal.v 
+    MuxKey.v
+    MuxKeyWithDefault.v
+)
 
 function(VerilateTarget target top_module )
     auto_bind(${target} ${CONSTR}/${top_module}.nxdc ${CMAKE_CURRENT_BINARY_DIR}/${top_module}_auto_bind.cpp)
@@ -33,8 +38,10 @@ function(VerilateTarget target top_module )
     )
 endfunction()
 
-VerilateTarget(Mux Mux4Way2Bit Mux4Way2Bit.v Mux4Way.v)
+VerilateTarget(Mux Mux4Way2Bit Mux4Way2Bit.v Mux4Way.v ${MUX_TEMPLATE})
 
 VerilateTarget(Code CodeTop CodeTop.v Encoder8to3.v Seg7Decoder.v)
 
 VerilateTarget(ALU ALU ALU.v adder.v)
+
+VerilateTarget(shift shift shift.v dff.v)

@@ -47,3 +47,5 @@ VerilateTarget(ALU ALU ALU.v adder.v)
 VerilateTarget(shift shift shift.v dff.v)
 
 VerilateTarget(BarrelShift BarrelShift BarrelShift.v ${MUX_TEMPLATE})
+
+VerilateTarget(LSFR LSFR LSFR.v shift.v dff.v)

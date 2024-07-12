@@ -13,7 +13,7 @@ module shift(
                 shiftOp == 3'b010 ? q2 : // LOGIC SHIFT RIGHT
                 shiftOp == 3'b011 ? 0 :  // LOGIC SHIFT LEFT
                 shiftOp == 3'b100 ? q2 : // ARITH SHIFT RIGHT
-                shiftOp == 3'b101 ? in : // SERIAL IN
+                shiftOp == 3'b101 ? q2 : // SERIAL IN
                 shiftOp == 3'b110 ? q2 : // ROTATE RIGHT
                 shiftOp == 3'b111 ? q8 : 0; // ROTATE LEFT
 
@@ -22,7 +22,7 @@ module shift(
                 shiftOp == 3'b010 ? q3 : // LOGIC SHIFT RIGHT
                 shiftOp == 3'b011 ? q1 :  // LOGIC SHIFT LEFT
                 shiftOp == 3'b100 ? q3 : // ARITH SHIFT RIGHT
-                shiftOp == 3'b101 ? q1 : // SERIAL IN
+                shiftOp == 3'b101 ? q3 : // SERIAL IN
                 shiftOp == 3'b110 ? q3 : // ROTATE RIGHT
                 shiftOp == 3'b111 ? q1 : 0; // ROTATE LEFT
     
@@ -31,7 +31,7 @@ module shift(
                 shiftOp == 3'b010 ? q4 : // LOGIC SHIFT RIGHT
                 shiftOp == 3'b011 ? q2 :  // LOGIC SHIFT LEFT
                 shiftOp == 3'b100 ? q4 : // ARITH SHIFT RIGHT
-                shiftOp == 3'b101 ? q2 : // SERIAL IN
+                shiftOp == 3'b101 ? q4 : // SERIAL IN
                 shiftOp == 3'b110 ? q4 : // ROTATE RIGHT
                 shiftOp == 3'b111 ? q2 : 0; // ROTATE LEFT
 
@@ -40,7 +40,7 @@ module shift(
                 shiftOp == 3'b010 ? q5 : // LOGIC SHIFT RIGHT
                 shiftOp == 3'b011 ? q3 :  // LOGIC SHIFT LEFT
                 shiftOp == 3'b100 ? q5 : // ARITH SHIFT RIGHT
-                shiftOp == 3'b101 ? q3 : // SERIAL IN
+                shiftOp == 3'b101 ? q5 : // SERIAL IN
                 shiftOp == 3'b110 ? q5 : // ROTATE RIGHT
                 shiftOp == 3'b111 ? q3 : 0; // ROTATE LEFT
     
@@ -49,7 +49,7 @@ module shift(
                 shiftOp == 3'b010 ? q6 : // LOGIC SHIFT RIGHT
                 shiftOp == 3'b011 ? q4 :  // LOGIC SHIFT LEFT
                 shiftOp == 3'b100 ? q6 : // ARITH SHIFT RIGHT
-                shiftOp == 3'b101 ? q4 : // SERIAL IN
+                shiftOp == 3'b101 ? q6 : // SERIAL IN
                 shiftOp == 3'b110 ? q6 : // ROTATE RIGHT
                 shiftOp == 3'b111 ? q4 : 0; // ROTATE LEFT
 
@@ -58,7 +58,7 @@ module shift(
                 shiftOp == 3'b010 ? q7 : // LOGIC SHIFT RIGHT
                 shiftOp == 3'b011 ? q5 :  // LOGIC SHIFT LEFT
                 shiftOp == 3'b100 ? q7 : // ARITH SHIFT RIGHT
-                shiftOp == 3'b101 ? q5 : // SERIAL IN
+                shiftOp == 3'b101 ? q7 : // SERIAL IN
                 shiftOp == 3'b110 ? q7 : // ROTATE RIGHT
                 shiftOp == 3'b111 ? q5 : 0; // ROTATE LEFT
 
@@ -67,7 +67,7 @@ module shift(
                 shiftOp == 3'b010 ? q8 : // LOGIC SHIFT RIGHT
                 shiftOp == 3'b011 ? q6 :  // LOGIC SHIFT LEFT
                 shiftOp == 3'b100 ? q8 : // ARITH SHIFT RIGHT
-                shiftOp == 3'b101 ? q6 : // SERIAL IN
+                shiftOp == 3'b101 ? q8 : // SERIAL IN
                 shiftOp == 3'b110 ? q8 : // ROTATE RIGHT
                 shiftOp == 3'b111 ? q6 : 0; // ROTATE LEFT
 
@@ -76,7 +76,7 @@ module shift(
                 shiftOp == 3'b010 ? 0 : // LOGIC SHIFT RIGHT
                 shiftOp == 3'b011 ? q7 :  // LOGIC SHIFT LEFT
                 shiftOp == 3'b100 ? q8 : // ARITH SHIFT RIGHT
-                shiftOp == 3'b101 ? q7 : // SERIAL IN
+                shiftOp == 3'b101 ? in : // SERIAL IN
                 shiftOp == 3'b110 ? q1 : // ROTATE RIGHT
                 shiftOp == 3'b111 ? q7 : 0; // ROTATE LEFT
     

@@ -45,3 +45,5 @@ VerilateTarget(Code CodeTop CodeTop.v Encoder8to3.v Seg7Decoder.v)
 VerilateTarget(ALU ALU ALU.v adder.v)
 
 VerilateTarget(shift shift shift.v dff.v)
+
+VerilateTarget(BarrelShift BarrelShift BarrelShift.v ${MUX_TEMPLATE})

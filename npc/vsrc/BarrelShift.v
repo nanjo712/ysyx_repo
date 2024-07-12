@@ -8,17 +8,17 @@ module BarrelShift(
     wire [7:0] left_1 = { din[6:0], 1'b0 };
     wire [7:0] right_1 = { arith ? din[7] : 1'b0, din[7:1] };
     wire [7:0] out1;
-    wire [7:0] left_2 = { din[5:0], 2'b00};
-    wire [7:0] right_2 = { arith ? 2{din[7]} : 2'b00, din[7:2] };
+    wire [7:0] left_2 = { out1[5:0], 2'b00};
+    wire [7:0] right_2 = { arith ? {2{out1[7]}} : 2'b00, out1[7:2] };
     wire [7:0] out2;
-    wire [7:0] left_4 = { din[3:0], 4'b0000};
-    wire [7:0] right_4 = { arith ? 4{din[7]} : 4'b0000, din[7:4] };
+    wire [7:0] left_4 = { out2[3:0], 4'b0000};
+    wire [7:0] right_4 = { arith ? {4{out2[7]}} : 4'b0000, out2[7:4] };
     wire [7:0] out4;
     assign dout = out4;
 
     genvar i;
     generate 
-        for (i = 0; i < 8; i = i + 1) begin : gen
+        for (i = 0; i < 8; i = i + 1) begin : gen1
             MuxKey #(4, 2, 1) i0 (
                 .out(out1[i]),
                 .key({dir,shift[0]}),
@@ -32,9 +32,8 @@ module BarrelShift(
         end
     endgenerate
 
-    genvar i;
     generate 
-        for (i = 0; i < 8; i = i + 1) begin : gen
+        for (i = 0; i < 8; i = i + 1) begin : gen2
             MuxKey #(4, 2, 1) i0 (
                 .out(out2[i]),
                 .key({dir,shift[1]}),
@@ -48,9 +47,8 @@ module BarrelShift(
         end
     endgenerate
 
-    genvar i;
     generate 
-        for (i = 0; i < 8; i = i + 1) begin : gen
+        for (i = 0; i < 8; i = i + 1) begin : gen4
             MuxKey #(4, 2, 1) i0 (
                 .out(out4[i]),
                 .key({dir,shift[2]}),

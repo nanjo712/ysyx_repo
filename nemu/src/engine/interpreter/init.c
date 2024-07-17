@@ -22,6 +22,7 @@ void engine_start() {
   cpu_exec(-1);
 #else
   /* Receive commands from user. */
+  // freopen("../../../tools/gen-expr/build/input", "r", stdin);
   sdb_mainloop();
 #endif
 }

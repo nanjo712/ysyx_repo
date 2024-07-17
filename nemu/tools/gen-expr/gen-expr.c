@@ -19,6 +19,7 @@
 #include <time.h>
 #include <assert.h>
 #include <string.h>
+#include <stdbool.h>
 
 // this should be enough
 static char buf[65536] = {};
@@ -30,9 +31,56 @@ static char *code_format =
 "  printf(\"%%u\", result); "
 "  return 0; "
 "}";
+static int max_tokens = 6000;
+static int use_tokens = 0;
+
+static inline int choose(int n) {
+  return rand() % n;
+}
+
+static void gen(char c) {
+  buf[strlen(buf)] = c;
+}
+
+static void gen_num() {
+  use_tokens ++;
+  int len = 1 + choose(10);
+  if (len == 1) {
+    gen(choose(10) + '0');
+  } else {
+    gen(choose(9) + '1');
+    for (int i = 1; i < len; i ++) {
+      gen(choose(10) + '0');
+    }
+  }
+}
+
+static void gen_rand_op() {
+  use_tokens ++;
+  switch (choose(4)) {
+    case 0: gen('+'); break;
+    case 1: gen('-'); break;
+    case 2: gen('*'); break;
+    case 3: gen('/'); break;
+  }
+}
+
+static void gen_blank() {
+  if (choose(2)) gen(' '); 
+}
 
 static void gen_rand_expr() {
-  buf[0] = '\0';
+  gen_blank();
+  if (max_tokens-use_tokens <= 2) 
+  {
+    gen_num();
+  } 
+  else switch (choose(3)) {
+    case 0: gen_num(); break;
+    case 1: use_tokens+=2; gen('('); gen_rand_expr(); gen(')'); break;
+    default: gen_rand_expr(); gen_rand_op(); gen_rand_expr(); break;
+  }
+  gen_blank();
 }
 
 int main(int argc, char *argv[]) {
@@ -44,6 +92,8 @@ int main(int argc, char *argv[]) {
   }
   int i;
   for (i = 0; i < loop; i ++) {
+    memset(buf, 0, sizeof(buf));
+    use_tokens = 0;
     gen_rand_expr();
 
     sprintf(code_buf, code_format, buf);
@@ -57,7 +107,8 @@ int main(int argc, char *argv[]) {
     if (ret != 0) continue;
 
     fp = popen("/tmp/.expr", "r");
-    assert(fp != NULL);
+    // assert(fp != NULL); 
+    if (fp==NULL) continue;
 
     int result;
     ret = fscanf(fp, "%d", &result);

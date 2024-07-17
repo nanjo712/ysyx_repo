@@ -17,7 +17,9 @@
 #include <cpu/cpu.h>
 #include <readline/readline.h>
 #include <readline/history.h>
+#include <memory/vaddr.h>
 #include "sdb.h"
+#include <common.h>
 
 static int is_batch_mode = false;
 
@@ -52,6 +54,51 @@ static int cmd_q(char *args) {
   return -1;
 }
 
+static int cmd_si(char *args) {
+  char *arg = strtok(NULL, " ");
+  int n = 1;
+  if (arg != NULL) {
+    sscanf(arg, "%d", &n);
+  }
+  cpu_exec(n);
+  return 0;
+}
+
+static int cmd_info(char *args) {
+  char *arg = strtok(NULL, " ");
+  if (strcmp(arg, "r") == 0) {
+    isa_reg_display();
+  }
+  return 0;
+}
+
+static int cmd_x(char *args)
+{
+  char *arg = strtok(NULL, " ");
+  int n=0;
+  if (arg==NULL) return 1;
+  n=atoi(arg);
+  arg = strtok(NULL, " ");
+  if (arg==NULL) return 1;
+  vaddr_t address;
+  sscanf(arg,"0x%x", &address);
+  for (int i=0;i<n;i++)
+  {
+    address += 4;
+    word_t result = vaddr_read(address, 4);
+    printf("%08x: %08x\n", address, result);
+  }
+  return 0;
+}
+
+static int cmd_p(char *args) {
+  bool flag;
+  int result=expr(args, &flag);
+  if (!flag) printf("Invalid expression\n");
+  else printf("%d\n", result);
+  return 0;
+}
+
 static int cmd_help(char *args);
 
 static struct {
@@ -62,7 +109,10 @@ static struct {
   { "help", "Display information about all supported commands", cmd_help },
   { "c", "Continue the execution of the program", cmd_c },
   { "q", "Exit NEMU", cmd_q },
-
+  { "si", "si [n] : Execute n instruction (Default n=1)", cmd_si },
+  { "x",  "x N EXPR : Show N word in memory at address EXPR", cmd_x },
+  { "info", "info r : Print register state", cmd_info },
+  { "p", "p EXPR : Print the value of EXPR", cmd_p },
   /* TODO: Add more commands */
 
 };
@@ -96,7 +146,25 @@ void sdb_set_batch_mode() {
   is_batch_mode = true;
 }
 
+
 void sdb_mainloop() {
+  char *buf = malloc(65536+128);
+  FILE *f = fopen("/home/woshiren/ysyx-workbench/nemu/tools/gen-expr/build/input", "r");
+  int cnt = 0; 
+  while (fgets(buf, 65536+128, f)!=NULL)
+  {
+    char *s=strtok(buf, " ");
+    printf("%s\n", s);
+    int result = atoi(s);
+    char *expr_s = s + strlen(s) + 1 ;
+    expr_s[strlen(expr_s)-1] = '\0';
+    printf("%s\n", expr_s);
+    int result_m = expr(expr_s, NULL);
+    assert(result == result_m);
+    cnt++;
+    printf("Passed %d\n",cnt);
+  }
+
   if (is_batch_mode) {
     cmd_c(NULL);
     return;
@@ -130,7 +198,9 @@ void sdb_mainloop() {
       }
     }
 
-    if (i == NR_CMD) { printf("Unknown command '%s'\n", cmd); }
+    if (i == NR_CMD) { 
+      printf("Unknown command '%s'\n", cmd); 
+    }
   }
 }
 

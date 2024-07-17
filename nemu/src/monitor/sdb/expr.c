@@ -21,8 +21,15 @@
 #include <regex.h>
 
 enum {
-  TK_NOTYPE = 256, TK_EQ,
-
+  TK_NOTYPE = 256, 
+  TK_EQ,
+  TK_NUMBER,
+  TK_ADD,
+  TK_SUB,
+  TK_MUL,
+  TK_DIV,
+  TK_LEFT_BRACKET,
+  TK_RIGHT_BRACKET,
   /* TODO: Add more token types */
 
 };
@@ -37,8 +44,14 @@ static struct rule {
    */
 
   {" +", TK_NOTYPE},    // spaces
-  {"\\+", '+'},         // plus
+  {"\\+", TK_ADD},         // plus
   {"==", TK_EQ},        // equal
+  {"\\-", TK_SUB},         // sub
+  {"\\*", TK_MUL},         // mul
+  {"\\/", TK_DIV},         // div
+  {"\\(", TK_LEFT_BRACKET},         // left bracket
+  {"\\)", TK_RIGHT_BRACKET},         // right bracket
+  {"[0-9]+", TK_NUMBER},         // number
 };
 
 #define NR_REGEX ARRLEN(rules)
@@ -64,7 +77,7 @@ void init_regex() {
 
 typedef struct token {
   int type;
-  char str[32];
+  char str[32768];   
 } Token;
 
 static Token tokens[32] __attribute__((used)) = {};
@@ -95,6 +108,23 @@ static bool make_token(char *e) {
          */
 
         switch (rules[i].token_type) {
+          case TK_NOTYPE: break;
+          case TK_ADD: tokens[nr_token].type = TK_ADD; nr_token++; break;
+          case TK_SUB: tokens[nr_token].type = TK_SUB; nr_token++; break;
+          case TK_MUL: tokens[nr_token].type = TK_MUL; nr_token++; break;
+          case TK_DIV: tokens[nr_token].type = TK_DIV; nr_token++; break;
+          case TK_LEFT_BRACKET: tokens[nr_token].type = TK_LEFT_BRACKET; nr_token++; break;
+          case TK_RIGHT_BRACKET: tokens[nr_token].type = TK_RIGHT_BRACKET; nr_token++; break;
+          case TK_NUMBER: 
+            if (substr_len >= 32) {
+              printf("number is too long\n");
+              return false;
+            }
+            tokens[nr_token].type = TK_NUMBER;
+            strncpy(tokens[nr_token].str, substr_start, substr_len);
+            tokens[nr_token].str[substr_len] = '\0';
+            nr_token++;
+            break;
           default: TODO();
         }
 
@@ -111,13 +141,100 @@ static bool make_token(char *e) {
   return true;
 }
 
+static int op_priority(int type) {
+  switch (type) {
+    case TK_NUMBER: return 0x3f3f3f3f;
+    case TK_ADD: return 1;
+    case TK_SUB: return 1;
+    case TK_MUL: return 2;
+    case TK_DIV: return 2;
+    case TK_LEFT_BRACKET: return 0x3f3f3f3f;
+    case TK_RIGHT_BRACKET: return 0x3f3f3f3f;
+    default: return 0x3f3f3f3f;
+  }
+}
 
-word_t expr(char *e, bool *success) {
+static bool check_parentheses(int p, int q) {
+  int i, cnt = 0;
+  if (tokens[p].type != TK_LEFT_BRACKET || tokens[q].type != TK_RIGHT_BRACKET) {
+    return false;
+  }
+  for (i = p + 1; i < q; i++) {
+    if (tokens[i].type == TK_LEFT_BRACKET) {
+      cnt++;
+    } else if (tokens[i].type == TK_RIGHT_BRACKET) {
+      cnt--;
+    }
+    if (cnt < 0) {
+      return false;
+    }
+  }
+  return cnt == 0;
+}
+
+static int dominant_operator(int p, int q) {
+  int i, op = p, cnt = 0, min_priority = 0x3f3f3f3f;
+  for (i = p; i <= q; i++) {
+    if (tokens[i].type == TK_LEFT_BRACKET) {
+      cnt++;
+    } else if (tokens[i].type == TK_RIGHT_BRACKET) {
+      cnt--;
+    } else if (cnt == 0 && op_priority(tokens[i].type) <= min_priority && 
+               (!(tokens[i].type == TK_ADD || tokens[i].type == TK_SUB) || 
+                tokens[i-1].type == TK_RIGHT_BRACKET || tokens[i-1].type == TK_NUMBER || i == p)
+              ) {
+      min_priority = op_priority(tokens[i].type);
+      op = i;
+    }
+  }
+  return op;
+}
+
+static int eval(int p, int q) {
+  if (p > q) {
+    printf("Bad expression with p=%d and q=%d\n",p,q);
+    assert(0);
+  } else if (p == q) {
+    int num = 0;
+    sscanf(tokens[p].str, "%d", &num);
+    return num;
+  } else if (check_parentheses(p, q)) {
+    return eval(p + 1, q - 1);
+  } else {
+    int op = dominant_operator(p, q);
+    if (p==op)
+    {
+      switch (tokens[op].type) {
+        case TK_ADD: return eval(p + 1, q);
+        case TK_SUB: return -eval(p + 1, q);
+        default: assert(0);
+      }
+    }
+    else 
+    {
+      int val1 = eval(p, op - 1);
+      int val2 = eval(op + 1, q);
+      switch (tokens[op].type) {
+        case TK_ADD: return val1 + val2;
+        case TK_SUB: return val1 - val2;
+        case TK_MUL: return val1 * val2;
+        case TK_DIV: return val1 / val2;
+        default: assert(0);
+      }
+    }
+  }
+}
+
+
+int expr(char *e, bool *success) {
   if (!make_token(e)) {
     *success = false;
     return 0;
   }
 
+  int result = eval(0, nr_token - 1);
+  *success = true;
+  return result;
   /* TODO: Insert codes to evaluate the expression. */
   TODO();
 

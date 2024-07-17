@@ -12,6 +12,7 @@
 !init.sh
 /fceux-am
 /nvboard
+/yosys-sta
 !CMakeLists.txt
 !.clang-format
 /am-kernels

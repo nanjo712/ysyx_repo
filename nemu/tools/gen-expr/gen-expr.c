@@ -23,7 +23,8 @@
 
 // this should be enough
 static char buf[65536] = {};
-static char code_buf[65536 + 128] = {}; // a little larger than `buf`
+static char buf_with_u[131072] = {};
+static char code_buf[131072 + 128] = {}; // a little larger than `buf`
 static char *code_format =
 "#include <stdio.h>\n"
 "int main() { "
@@ -39,6 +40,7 @@ static inline int choose(int n) {
 }
 
 static void gen(char c) {
+  buf_with_u[strlen(buf_with_u)] = c;
   buf[strlen(buf)] = c;
 }
 
@@ -76,8 +78,9 @@ static void gen_rand_expr() {
     gen_num();
   } 
   else switch (choose(3)) {
-    case 0: gen_num(); break;
-    case 1: use_tokens+=2; gen('('); gen_rand_expr(); gen(')'); break;
+    case 0: strcat(buf_with_u, "(unsigned)");
+            gen_num(); break;
+    case 1: use_tokens+=2u; gen('('); gen_rand_expr(); gen(')'); break;
     default: gen_rand_expr(); gen_rand_op(); gen_rand_expr(); break;
   }
   gen_blank();
@@ -93,28 +96,43 @@ int main(int argc, char *argv[]) {
   int i;
   for (i = 0; i < loop; i ++) {
     memset(buf, 0, sizeof(buf));
+    memset(buf_with_u, 0, sizeof(buf_with_u));
     use_tokens = 0;
     gen_rand_expr();
-
-    sprintf(code_buf, code_format, buf);
+    sprintf(code_buf, code_format, buf_with_u);
 
     FILE *fp = fopen("/tmp/.code.c", "w");
     assert(fp != NULL);
     fputs(code_buf, fp);
     fclose(fp);
 
-    int ret = system("gcc /tmp/.code.c -o /tmp/.expr");
-    if (ret != 0) continue;
+    int ret = system("gcc -Wall -Werror /tmp/.code.c -o /tmp/.expr > /dev/null 2>&1"); 
+    if (ret != 0) 
+    {
+      perror("[WARNING] Got a ERROR, regenerating.");  
+      i = i-1; 
+      continue;
+    }
 
     fp = popen("/tmp/.expr", "r");
-    // assert(fp != NULL); 
-    if (fp==NULL) continue;
+    assert(fp != NULL);   
 
     int result;
     ret = fscanf(fp, "%d", &result);
-    pclose(fp);
-
-    printf("%u %s\n", result, buf);
+    int status = pclose(fp);
+    if (status != 0) 
+    {
+      perror("[WARNING] Got a FPE, regenerating.");  
+      i = i-1; 
+      continue;   
+    }
+    else
+    {
+      printf("%u %s\n", result, buf);
+      char *s = malloc(65536+128);
+      sprintf(s, "[INFO] Successfully generated: %d", i);
+      perror(s);
+    }
   }
   return 0;
 }

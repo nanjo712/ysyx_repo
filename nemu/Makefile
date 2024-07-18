@@ -59,3 +59,7 @@ else
 # Include rules to build NEMU
 include $(NEMU_HOME)/scripts/native.mk
 endif
+
+.PHONY: count
+count: 
+  @echo "Total lines of code: `find src -name "*.c" -o -name "*.h" | xargs cat | wc -l`"

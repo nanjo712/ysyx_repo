@@ -52,7 +52,10 @@ savedefconfig: $(CONF)
 	$(Q)$< $(silent) --defconfig=configs/$@ $(Kconfig)
 	$(Q)$< $(silent) --syncconfig $(Kconfig)
 
-.PHONY: menuconfig savedefconfig defconfig
+count: 
+	@echo "Total lines of code: `find src -name "*.c" -o -name "*.h" | xargs cat | grep -vE '^ *$$' | wc -l`"
+
+.PHONY: menuconfig savedefconfig defconfig count
 
 # Help text used by make help
 help:

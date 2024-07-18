@@ -20,11 +20,26 @@
 #include <memory/vaddr.h>
 #include "sdb.h"
 #include <common.h>
+#include <utils.h>
+
+typedef struct watchpoint {
+  int NO;
+  struct watchpoint *next;
+
+  /* TODO: Add more members if necessary */
+  char expr[32];
+  word_t old_value;
+} WP;
 
 static int is_batch_mode = false;
 
 void init_regex();
 void init_wp_pool();
+bool check_wp();
+WP* get_from_no(int no);
+WP *new_wp();
+void free_wp(WP *wp);
+void print_wp();
 
 /* We use the `readline' library to provide more flexibility to read from stdin. */
 static char* rl_gets() {
@@ -51,6 +66,7 @@ static int cmd_c(char *args) {
 
 
 static int cmd_q(char *args) {
+  set_nemu_state(NEMU_QUIT, cpu.pc, 0);
   return -1;
 }
 
@@ -69,6 +85,9 @@ static int cmd_info(char *args) {
   if (strcmp(arg, "r") == 0) {
     isa_reg_display();
   }
+  else if (strcmp(arg, "w") == 0) {
+    print_wp();
+  }
   return 0;
 }
 
@@ -81,21 +100,40 @@ static int cmd_x(char *args)
   arg = strtok(NULL, " ");
   if (arg==NULL) return 1;
   vaddr_t address;
-  sscanf(arg,"0x%x", &address);
+  bool flag;
+  address = expr(arg, &flag);
+  if (!flag) return 1;
   for (int i=0;i<n;i++)
   {
-    address += 4;
     word_t result = vaddr_read(address, 4);
     printf("%08x: %08x\n", address, result);
+    address += 4;
   }
   return 0;
 }
 
 static int cmd_p(char *args) {
   bool flag;
-  int result=expr(args, &flag);
+  unsigned result=expr(args, &flag);
   if (!flag) printf("Invalid expression\n");
-  else printf("%d\n", result);
+  else printf("%u\n", result);
+  return 0;
+}
+
+static int cmd_w(char *args) {
+  WP *wp = new_wp();
+  strcpy(wp->expr, args);
+  bool flag;
+  wp->old_value = expr(args, &flag);
+  printf("Watchpoint %d: %s\n", wp->NO, wp->expr);
+  return 0;
+}
+
+static int cmd_d(char *args) {
+  int n;
+  sscanf(args, "%d", &n);
+  WP *wp = get_from_no(n);
+  free_wp(wp);
   return 0;
 }
 
@@ -112,7 +150,10 @@ static struct {
   { "si", "si [n] : Execute n instruction (Default n=1)", cmd_si },
   { "x",  "x N EXPR : Show N word in memory at address EXPR", cmd_x },
   { "info", "info r : Print register state", cmd_info },
+  { "info", "info w : Print watchpoint information", cmd_info },
   { "p", "p EXPR : Print the value of EXPR", cmd_p },
+  { "w", "w EXPR : Set a watchpoint for EXPR", cmd_w },
+  { "d", "d N : Delete watchpoint N", cmd_d },
   /* TODO: Add more commands */
 
 };
@@ -146,24 +187,47 @@ void sdb_set_batch_mode() {
   is_batch_mode = true;
 }
 
+int record[20000];
+int rec_cnt = 0;
 
-void sdb_mainloop() {
+void test_expr()
+{
   char *buf = malloc(65536+128);
   FILE *f = fopen("/home/woshiren/ysyx-workbench/nemu/tools/gen-expr/build/input", "r");
   int cnt = 0; 
   while (fgets(buf, 65536+128, f)!=NULL)
   {
     char *s=strtok(buf, " ");
-    printf("%s\n", s);
-    int result = atoi(s);
+    // printf("Test %d: %s ", cnt, s);
+    unsigned long result = strtoul(s, NULL, 10);
     char *expr_s = s + strlen(s) + 1 ;
+    // printf("%s", expr_s);
     expr_s[strlen(expr_s)-1] = '\0';
-    printf("%s\n", expr_s);
-    int result_m = expr(expr_s, NULL);
-    assert(result == result_m);
+    unsigned long result_m = expr(expr_s, NULL);
+    // printf("Expected: %ld, Got: %ld\n", result, result_m);
+    if (result!=result_m) 
+    {
+      // printf("Failed %d\n",cnt);
+      record[rec_cnt++] = cnt;
+    }
+    else 
+    {
+      // printf("Passed %d\n",cnt);
+    }
     cnt++;
-    printf("Passed %d\n",cnt);
   }
+
+  printf("Total %d tests, %d passed, %d failed\n", cnt, cnt-rec_cnt, rec_cnt);
+  for (int i=0;i<rec_cnt;i++)
+  {
+    printf("%d ", record[i]);
+  }
+  free(buf);
+  fclose(f);
+}
+
+void sdb_mainloop() {
+  test_expr();
 
   if (is_batch_mode) {
     cmd_c(NULL);

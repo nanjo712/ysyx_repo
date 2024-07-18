@@ -19,6 +19,7 @@
  * Type 'man regex' for more information about POSIX regex functions.
  */
 #include <regex.h>
+#include <memory/vaddr.h>
 
 enum {
   TK_NOTYPE = 256, 
@@ -30,6 +31,9 @@ enum {
   TK_DIV,
   TK_LEFT_BRACKET,
   TK_RIGHT_BRACKET,
+  TK_REGISTER,
+  TK_HEX,
+  TK_AND
   /* TODO: Add more token types */
 
 };
@@ -51,7 +55,11 @@ static struct rule {
   {"\\/", TK_DIV},         // div
   {"\\(", TK_LEFT_BRACKET},         // left bracket
   {"\\)", TK_RIGHT_BRACKET},         // right bracket
+  {"0x[0-9a-fA-F]+", TK_HEX},         // hex number
   {"[0-9]+", TK_NUMBER},         // number
+  {"\\$0", TK_REGISTER},        // register
+  {"\\$[a-zA-Z0-9]+", TK_REGISTER},        // register
+  {"&&", TK_AND}
 };
 
 #define NR_REGEX ARRLEN(rules)
@@ -77,10 +85,10 @@ void init_regex() {
 
 typedef struct token {
   int type;
-  char str[32768];   
+  char str[32];   
 } Token;
 
-static Token tokens[32] __attribute__((used)) = {};
+static Token tokens[32768] __attribute__((used)) = {};
 static int nr_token __attribute__((used))  = 0;
 
 static bool make_token(char *e) {
@@ -97,8 +105,8 @@ static bool make_token(char *e) {
         char *substr_start = e + position;
         int substr_len = pmatch.rm_eo;
 
-        Log("match rules[%d] = \"%s\" at position %d with len %d: %.*s",
-            i, rules[i].regex, position, substr_len, substr_len, substr_start);
+        // Log("match rules[%d] = \"%s\" at position %d with len %d: %.*s",
+        //     i, rules[i].regex, position, substr_len, substr_len, substr_start);
 
         position += substr_len;
 
@@ -115,12 +123,34 @@ static bool make_token(char *e) {
           case TK_DIV: tokens[nr_token].type = TK_DIV; nr_token++; break;
           case TK_LEFT_BRACKET: tokens[nr_token].type = TK_LEFT_BRACKET; nr_token++; break;
           case TK_RIGHT_BRACKET: tokens[nr_token].type = TK_RIGHT_BRACKET; nr_token++; break;
+          case TK_EQ: tokens[nr_token].type = TK_EQ; nr_token++; break;
+          case TK_AND: tokens[nr_token].type = TK_AND; nr_token++; break;
           case TK_NUMBER: 
             if (substr_len >= 32) {
               printf("number is too long\n");
               return false;
             }
             tokens[nr_token].type = TK_NUMBER;
+            strncpy(tokens[nr_token].str, substr_start, substr_len);
+            tokens[nr_token].str[substr_len] = '\0';
+            nr_token++;
+            break;
+          case TK_HEX:
+            if (substr_len >= 32) {
+              printf("hex number is too long\n");
+              return false;
+            }
+            tokens[nr_token].type = TK_HEX;
+            strncpy(tokens[nr_token].str, substr_start, substr_len);
+            tokens[nr_token].str[substr_len] = '\0';
+            nr_token++;
+            break;
+          case TK_REGISTER:
+            if (substr_len >= 32) {
+              printf("register name is too long\n");
+              return false;
+            }
+            tokens[nr_token].type = TK_REGISTER;
             strncpy(tokens[nr_token].str, substr_start, substr_len);
             tokens[nr_token].str[substr_len] = '\0';
             nr_token++;
@@ -143,13 +173,12 @@ static bool make_token(char *e) {
 
 static int op_priority(int type) {
   switch (type) {
-    case TK_NUMBER: return 0x3f3f3f3f;
+    case TK_AND: return 0;
+    case TK_EQ:  return 0;
     case TK_ADD: return 1;
     case TK_SUB: return 1;
     case TK_MUL: return 2;
     case TK_DIV: return 2;
-    case TK_LEFT_BRACKET: return 0x3f3f3f3f;
-    case TK_RIGHT_BRACKET: return 0x3f3f3f3f;
     default: return 0x3f3f3f3f;
   }
 }
@@ -180,7 +209,7 @@ static int dominant_operator(int p, int q) {
     } else if (tokens[i].type == TK_RIGHT_BRACKET) {
       cnt--;
     } else if (cnt == 0 && op_priority(tokens[i].type) <= min_priority && 
-               (!(tokens[i].type == TK_ADD || tokens[i].type == TK_SUB) || 
+               (!(tokens[i].type == TK_ADD || tokens[i].type == TK_SUB || tokens[i].type == TK_MUL) || 
                 tokens[i-1].type == TK_RIGHT_BRACKET || tokens[i-1].type == TK_NUMBER || i == p)
               ) {
       min_priority = op_priority(tokens[i].type);
@@ -190,13 +219,35 @@ static int dominant_operator(int p, int q) {
   return op;
 }
 
-static int eval(int p, int q) {
+static char *type_to_str(int type) {
+  switch (type) {
+    case TK_NUMBER: return "number";
+    case TK_ADD: return "add";
+    case TK_SUB: return "sub";
+    case TK_MUL: return "mul";
+    case TK_DIV: return "div";
+    case TK_LEFT_BRACKET: return "left bracket";
+    case TK_RIGHT_BRACKET: return "right bracket";
+    default: return "unknown";
+  }
+}
+
+static unsigned eval(int p, int q) {
   if (p > q) {
-    printf("Bad expression with p=%d and q=%d\n",p,q);
-    assert(0);
+    printf("Bad expression\n");
+    return 0;
   } else if (p == q) {
-    int num = 0;
-    sscanf(tokens[p].str, "%d", &num);
+    unsigned num = 0;
+    bool success;
+    if (tokens[p].type==TK_NUMBER) sscanf(tokens[p].str, "%u", &num);
+    else if (tokens[p].type==TK_HEX) sscanf(tokens[p].str, "0x%x", &num);
+    else if (tokens[p].type==TK_REGISTER) {
+      num=isa_reg_str2val(tokens[p].str, &success);
+      if (!success) {
+        printf("Register %s not found\n", tokens[p].str);
+        return 0;
+      }
+    } else assert(0);
     return num;
   } else if (check_parentheses(p, q)) {
     return eval(p + 1, q - 1);
@@ -207,18 +258,34 @@ static int eval(int p, int q) {
       switch (tokens[op].type) {
         case TK_ADD: return eval(p + 1, q);
         case TK_SUB: return -eval(p + 1, q);
-        default: assert(0);
+        case TK_MUL: word_t address = eval(p + 1, q);
+                     address = vaddr_read(address, 4);
+                     return address;
+        default: return 0;
       }
     }
     else 
     {
-      int val1 = eval(p, op - 1);
-      int val2 = eval(op + 1, q);
+      unsigned val1 = eval(p, op - 1);
+      unsigned val2 = eval(op + 1, q);
       switch (tokens[op].type) {
         case TK_ADD: return val1 + val2;
         case TK_SUB: return val1 - val2;
         case TK_MUL: return val1 * val2;
-        case TK_DIV: return val1 / val2;
+        case TK_EQ: return val1 == val2;
+        case TK_AND: return val1 && val2;
+        case TK_DIV: if (val2==0) 
+        {
+          Log("Divided by zero, OP: %d, p: %d, q: %d", op, p, q);
+          for (int i = p; i <= q; i++) {
+            Log("Token %d: %s", i, type_to_str(tokens[i].type));
+            if (tokens[i].type == TK_NUMBER) {
+              Log("Number %d: %s", i, tokens[i].str);
+            }
+          }
+        }
+                     assert(val2!=0);
+                     return val1 / val2;
         default: assert(0);
       }
     }
@@ -226,14 +293,14 @@ static int eval(int p, int q) {
 }
 
 
-int expr(char *e, bool *success) {
+unsigned expr(char *e, bool *success) {
   if (!make_token(e)) {
-    *success = false;
+    if (success!=NULL) *success = false;
     return 0;
   }
 
-  int result = eval(0, nr_token - 1);
-  *success = true;
+  unsigned result = eval(0, nr_token - 1);
+  if (success!=NULL) *success = true;
   return result;
   /* TODO: Insert codes to evaluate the expression. */
   TODO();

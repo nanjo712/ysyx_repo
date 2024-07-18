@@ -31,5 +31,30 @@ void isa_reg_display() {
 }
 
 word_t isa_reg_str2val(const char *s, bool *success) {
+  if (s == NULL) {
+    *success = false;
+    return 0;
+  }
+
+  if (strcmp(s, "$pc") == 0) {
+    *success = true;
+    return cpu.pc;
+  }
+
+  if (strcmp(s, "$0") == 0) {
+    *success = true;
+    return gpr(0);
+  }
+
+  if (s[0] == '$') {
+    for (int i = 1; i < 32; i++) {
+      if (strcmp(s + 1, regs[i]) == 0) {
+        *success = true;
+        return gpr(i);
+      }
+    }
+  }
+
+  *success = false;
   return 0;
 }

@@ -10,6 +10,7 @@
 !README.md
 !.gitignore
 !init.sh
+!/nemu_cpp
 /fceux-am
 /nvboard
 /yosys-sta

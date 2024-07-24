@@ -8,6 +8,7 @@ set(ENV{NEMU_HOME} ${CMAKE_CURRENT_SOURCE_DIR}/nemu)
 
 add_subdirectory(nvboard)
 add_subdirectory(npc)
+add_subdirectory(nemu-cpp)
 
 
 

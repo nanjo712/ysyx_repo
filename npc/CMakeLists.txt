@@ -33,10 +33,6 @@ function(VerilateTarget target top_module )
         PREFIX V${top_module}
         VERILATOR_ARGS ${ARGS_VERILATOR}
     )
-    add_custom_command(TARGET ${target} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E env NEMU_HOME=$ENV{NEMU_HOME} make commit
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    )
 endfunction()
 
 VerilateTarget(Mux Mux4Way2Bit Mux4Way2Bit.v Mux4Way.v ${MUX_TEMPLATE})

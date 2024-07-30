@@ -1,6 +1,19 @@
-STUID = ysyx_1145141919810
-STUNAME = 叶家聪
+STUID = ysyx_24070002
+STUNAME = 叶家聪 
 
+NEMU_EXEC  := ./build/nemu-cpp/app/nemu-cpp
+IMAGE_FILE ?= /home/woshiren/abstract-machine/build/src/am_target.bin
+
+run_nemu:
+	$(call git_commit, "run NEMU")
+	$(NEMU_EXEC) $(IMAGE_FILE)
+
+gdb_nemu:
+	$(call git_commit, "gdb NEMU")
+	gdb -s $(NEMU_EXEC) --args $(NEMU_EXEC) $(IMAGE_FILE)
+
+.PHONY: run_nemu gdb_nemu
+	 
 # DO NOT modify the following code!!!
 
 TRACER = tracer-ysyx

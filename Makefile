@@ -2,16 +2,20 @@ STUID = ysyx_24070002
 STUNAME = 叶家聪 
 
 NEMU_EXEC  := ./build/nemu-cpp/app/nemu-cpp
+BUILD_DIR  := ./build
 IMAGE_FILE ?= /home/woshiren/ysyx-workbench/am-kernels/tests/cpu-tests/build/dummy-riscv32-nemu.bin
 
-run_nemu:
+build_nemu:
+	$(call git_commit, "build NEMU")
+	cmake -S . -B $(BUILD_DIR)
+	cmake --build $(BUILD_DIR)
+
+run_nemu: build_nemu
 	$(call git_commit, "run NEMU")
 	$(NEMU_EXEC) $(IMAGE_FILE)
 
-gdb_nemu:
+gdb_nemu: build_nemu
 	$(call git_commit, "gdb NEMU")
-#	gdb -s $(NEMU_EXEC) --args $(NEMU_EXEC) $(IMAGE_FILE) -ex 'target remote :1234'
-# start a gdbserver on port 1234
 	gdbserver localhost:1234 ${NEMU_EXEC} ${IMAGE_FILE}
 
 

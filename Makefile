@@ -12,7 +12,7 @@ build_nemu:
 
 run_nemu: build_nemu
 	$(call git_commit, "run NEMU")
-	$(NEMU_EXEC) $(IMAGE_FILE)
+	$(NEMU_EXEC) -b $(IMAGE_FILE)
 
 gdb_nemu: build_nemu
 	$(call git_commit, "gdb NEMU")

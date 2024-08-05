@@ -1,3 +1,6 @@
 [submodule "nemu-cpp"]
 	path = nemu-cpp
 	url = git@github.com:nanjo712/nemu-cpp.git
+[submodule "nvboard"]
+	path = nvboard
+	url = git@github.com:nanjo712/nvboard.git

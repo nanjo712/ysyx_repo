@@ -12,7 +12,7 @@ set(ARGS_VERILATOR
 )
 set(MUX_TEMPLATE
     MuxKeyInternal.v 
-    MuxKey.v
+    MuxKey.v    
     MuxKeyWithDefault.v
 )
 

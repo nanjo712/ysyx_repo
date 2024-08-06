@@ -4,3 +4,6 @@
 [submodule "nvboard"]
 	path = nvboard
 	url = git@github.com:nanjo712/nvboard.git
+[submodule "WSR32"]
+	path = WSR32
+	url = git@github.com:nanjo712/WSR32.git

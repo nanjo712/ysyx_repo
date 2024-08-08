@@ -12,7 +12,7 @@ find_package(verilator HINTS $ENV{VERILATOR_ROOT})
 set(ENV{NEMU_HOME} ${CMAKE_CURRENT_SOURCE_DIR}/nemu)
 
 add_subdirectory(nvboard)
-# add_subdirectory(npc)
+add_subdirectory(abstract-machine)
 add_subdirectory(nemu-cpp)
 
 

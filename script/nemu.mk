@@ -1,7 +1,7 @@
-NEMU_EXEC  := ./build/nemu-cpp/app/nemu-cpp
 BUILD_DIR  := ./build
+NEMU_EXEC = $(BUILD_DIR)/nemu-cpp/app/nemu-cpp
 
-CPU_TEST = /home/woshiren/abstract-machine/build/app/cpu-test/
+CPU_TEST = ${BUILD_DIR}/abstract-machine/app/cpu-test/
 CPU_TEST_BINS = $(wildcard $(CPU_TEST)*.bin)
 IMG_FILE ?= ${CPU_TEST}dummy.bin 
 

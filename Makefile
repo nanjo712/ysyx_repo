@@ -15,7 +15,7 @@ TRACER_BRANCH = $(TRACER)
 
 LOCK_DIR = $(YSYX_HOME)/.git/
 
-# prototype: git_soft_checkout(branch)
+# prototype: git_soft_checkout(branch)			
 define git_soft_checkout
 	git checkout --detach -q && git reset --soft $(1) -q -- && git checkout $(1) -q --
 endef

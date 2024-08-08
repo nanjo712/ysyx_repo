@@ -7,3 +7,6 @@
 [submodule "WSR32"]
 	path = WSR32
 	url = git@github.com:nanjo712/WSR32.git
+[submodule "abstract-machine"]
+	path = abstract-machine
+	url = git@github.com:nanjo712/abstract-machine.git

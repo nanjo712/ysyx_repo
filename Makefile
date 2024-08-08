@@ -1,5 +1,7 @@
 STUID = ysyx_24070002
 STUNAME = 叶家聪 
+
+include ./script/nemu.mk			
 	 
 # DO NOT modify the following code!!!
 

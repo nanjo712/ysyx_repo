@@ -3,7 +3,7 @@ NEMU_EXEC = $(BUILD_DIR)/nemu-cpp/app/nemu-cpp
 
 CPU_TEST = ${BUILD_DIR}/abstract-machine/app/cpu-test/
 CPU_TEST_BINS = $(wildcard $(CPU_TEST)*.bin)
-IMG_FILE ?= ${CPU_TEST}dummy.bin 
+IMG_FILE ?= dummy
 
 build_nemu:
 	$(call git_commit, "build NEMU")
@@ -12,11 +12,11 @@ build_nemu:
 
 run_nemu: build_nemu
 	$(call git_commit, "run NEMU")
-	$(NEMU_EXEC) $(IMG_FILE)
+	$(NEMU_EXEC) -e ${CPU_TEST}/${IMG_FILE}.elf ${CPU_TEST}/$(IMG_FILE).bin
 
 gdb_nemu: build_nemu
 	$(call git_commit, "gdb NEMU")
-	gdbserver localhost:1234 ${NEMU_EXEC} ${IMG_FILE}
+	gdbserver localhost:1234 ${NEMU_EXEC} ${CPU_TEST}/${IMG_FILE}
 
 %.bin: build_nemu
 	${NEMU_EXEC} -b $@

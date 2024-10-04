@@ -1,14 +1,14 @@
 STUID = ysyx_24070002
 STUNAME = 叶家聪 
 
-# include ./script/nemu.mk			
+include ./script/nemu.mk			
 	 
 # DO NOT modify the following code!!!
 
 TRACER = tracer-ysyx
 GITFLAGS = -q --author='$(TRACER) <tracer@ysyx.org>' --no-verify --allow-empty
 
-YSYX_HOME = $(NEMU_HOME)/..
+YSYX_HOME = $(shell pwd)
 WORK_BRANCH = $(shell git rev-parse --abbrev-ref HEAD)
 WORK_INDEX = $(YSYX_HOME)/.git/index.$(WORK_BRANCH)
 TRACER_BRANCH = $(TRACER)
